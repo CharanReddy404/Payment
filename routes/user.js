@@ -1,8 +1,9 @@
 const express = require('express');
 const z = require('zod');
 const jwt = require('jsonwebtoken');
-const { User } = require('../db');
+const { User, Account } = require('../db');
 const { JWT_SECRET } = require('../config');
+const { authMiddleware } = require('../middleware');
 const router = express.Router();
 
 const userSignUpSchema = z.object({
@@ -14,10 +15,12 @@ const userSignUpSchema = z.object({
 
 router.post('/signup', async (req, res) => {
   const user = userSignUpSchema.safeParse(req.body);
+  const balance = 1 + Math.floor(Math.random() * 10000);
   if (user.success) {
     const userExist = await User.findOne({ username: user?.data?.username });
     if (!userExist) {
       const newUser = await User.create(user.data);
+      await Account.create({ userId: newUser._id, balance });
       const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
       res
         .status(200)
@@ -45,16 +48,64 @@ router.post('/signin', async (req, res) => {
   if (user.success) {
     const userExist = await User.findOne({ username: user?.data?.username });
     if (userExist && userExist.password == user.data.password) {
-      console.log(userExist);
       const token = jwt.sign({ userId: userExist._id }, JWT_SECRET);
       res.status(200).json({ token: token });
     } else {
-      console.log(userExist);
       res.status(411).json({ message: 'Error while logging in' });
     }
   } else {
     console.log(user.error);
     res.status(411).json({ message: 'Error while logging in' });
+  }
+});
+
+const userUpdateSchema = z.object({
+  firstName: z.string().optional(),
+  password: z.string().optional(),
+  lastName: z.string().optional(),
+});
+
+router.put('/', authMiddleware, async (req, res) => {
+  const user = userUpdateSchema.safeParse(req.body);
+  try {
+    if (user.success) {
+      await User.updateOne({ _id: req.userId }, req.body);
+      res.json({
+        message: 'Updated successfully',
+      });
+    } else {
+      res.status(411).json({
+        message: 'Error while updating information',
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(411).json({
+      message: 'Error while updating information',
+    });
+  }
+});
+
+router.get('/bulk', async (req, res) => {
+  try {
+    const { filter } = req.query;
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: filter, $options: 'i' } },
+        { lastName: { $regex: filter, $options: 'i' } },
+      ],
+    });
+
+    res.status(200).json({
+      users: users.map((user) => ({
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id,
+      })),
+    });
+  } catch (error) {
+    console.log(error);
   }
 });
 
