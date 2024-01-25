@@ -13,8 +13,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/provider/authProvider';
+import { toast } from 'react-toastify';
 
 const userSignInSchema = z.object({
   username: z.string().email(),
@@ -26,7 +27,7 @@ const SignIn = () => {
   const navigate = useNavigate();
 
   if (token) {
-    navigate('/dashboard', { replace: true });
+    return <Navigate to='/dashboard' />;
   }
 
   const form = useForm<z.infer<typeof userSignInSchema>>({
@@ -39,13 +40,17 @@ const SignIn = () => {
 
   async function onSubmit(values: z.infer<typeof userSignInSchema>) {
     console.log(values);
-    const user = await axios.post(
-      'http://localhost:3000/api/v1/user/signin',
-      values
-    );
+    try {
+      const user = await axios.post(
+        process.env.API_ENDPOINT + '/user/signin',
+        values
+      );
 
-    setToken(user.data.token);
-    navigate('/dashboard', { replace: true });
+      setToken(user.data.token);
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
   }
 
   return (

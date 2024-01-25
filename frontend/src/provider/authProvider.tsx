@@ -11,7 +11,7 @@ import React, {
 const AuthContext = createContext<{
   token: string | null;
   setToken: (newToken: string | null) => void;
-  user: JwtPayload | null;
+  userInfo: JwtPayload | null;
 } | null>(null);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -19,9 +19,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.getItem('token')
   );
 
-  const [user, setUser] = useState<JwtPayload | null>(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
+  const [userInfo, setUserInfo] = useState<JwtPayload | null>(() => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    return storedUserInfo ? JSON.parse(storedUserInfo) : null;
   });
 
   const setToken = (newToken: string | null) => {
@@ -32,14 +32,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
       localStorage.setItem('token', token);
-      const userData = jwtDecode(token);
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      const userInfoData = jwtDecode(token);
+      setUserInfo(userInfoData);
+      localStorage.setItem('userInfo', JSON.stringify(userInfoData));
     } else {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
+      localStorage.removeItem('userInfo');
+      setUserInfo(null);
     }
   }, [token]);
 
@@ -47,9 +47,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       token,
       setToken,
-      user,
+      userInfo,
     }),
-    [token, user]
+    [token, userInfo]
   );
 
   return (

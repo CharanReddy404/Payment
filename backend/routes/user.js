@@ -15,7 +15,7 @@ const userSignUpSchema = z.object({
 
 router.post('/signup', async (req, res) => {
   const user = userSignUpSchema.safeParse(req.body);
-  const balance = 1 + Math.floor(Math.random() * 10000);
+  const balance = 1 + Math.floor(Math.random() * 100000);
   if (user.success) {
     const userExist = await User.findOne({ username: user?.data?.username });
     if (!userExist) {
@@ -65,7 +65,7 @@ router.post('/signin', async (req, res) => {
       );
       res.status(200).json({ token: token });
     } else {
-      res.status(411).json({ message: 'Error while logging in' });
+      res.status(411).json({ message: 'Invalid credentials' });
     }
   } else {
     console.log(user.error);

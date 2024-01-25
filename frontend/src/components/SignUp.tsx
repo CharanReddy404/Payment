@@ -12,9 +12,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '@/provider/authProvider';
+import { toast } from 'react-toastify';
 
 const userSignUpSchema = z.object({
   username: z.string().email().min(3),
@@ -28,7 +29,7 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   if (token) {
-    navigate('/dashboard', { replace: true });
+    return <Navigate to='/dashboard' />;
   }
 
   const form = useForm<z.infer<typeof userSignUpSchema>>({
@@ -37,13 +38,18 @@ const SignUp = () => {
 
   async function onSubmit(values: z.infer<typeof userSignUpSchema>) {
     console.log(values);
-    const user = await axios.post(
-      process.env.API_ENDPOINT + `/user/signup`,
-      values
-    );
 
-    setToken(user.data.token);
-    navigate('/dashboard', { replace: true });
+    try {
+      const user = await axios.post(
+        process.env.API_ENDPOINT + `/user/signup`,
+        values
+      );
+
+      setToken(user.data.token);
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
   }
 
   return (
