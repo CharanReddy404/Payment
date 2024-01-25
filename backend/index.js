@@ -2,6 +2,7 @@ const express = require('express');
 const { mongoose } = require('mongoose');
 const cors = require('cors');
 const rootRouter = require('./routes/index');
+require('dotenv').config();
 
 const app = express();
 
@@ -11,7 +12,7 @@ app.use(express.json());
 app.use('/api/v1', rootRouter);
 
 mongoose
-  .connect('mongodb://localhost:27017/paytm')
+  .connect(process.env.MONGODB_URL)
   .then(() => console.log('DB Connected!'));
 
 app.listen(3000, () => {

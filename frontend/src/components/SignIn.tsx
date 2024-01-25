@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import axios from 'axios';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +13,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/provider/authProvider';
 
 const userSignInSchema = z.object({
   username: z.string().email(),
@@ -20,12 +22,30 @@ const userSignInSchema = z.object({
 });
 
 const SignIn = () => {
+  const { token, setToken } = useAuth();
+  const navigate = useNavigate();
+
+  if (token) {
+    navigate('/dashboard', { replace: true });
+  }
+
   const form = useForm<z.infer<typeof userSignInSchema>>({
     resolver: zodResolver(userSignInSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
   });
 
-  function onSubmit(values: z.infer<typeof userSignInSchema>) {
+  async function onSubmit(values: z.infer<typeof userSignInSchema>) {
     console.log(values);
+    const user = await axios.post(
+      'http://localhost:3000/api/v1/user/signin',
+      values
+    );
+
+    setToken(user.data.token);
+    navigate('/dashboard', { replace: true });
   }
 
   return (
@@ -61,7 +81,8 @@ const SignIn = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className='font-bold '>
-                    Password <span className='text-red-500'>*</span>
+                    Password
+                    <span className='text-red-500'>*</span>
                   </FormLabel>
                   <FormControl>
                     <Input type='password' {...field} />

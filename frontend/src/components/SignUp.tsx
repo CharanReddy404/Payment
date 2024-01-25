@@ -12,7 +12,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '@/provider/authProvider';
 
 const userSignUpSchema = z.object({
   username: z.string().email().min(3),
@@ -22,12 +24,26 @@ const userSignUpSchema = z.object({
 });
 
 const SignUp = () => {
+  const { token, setToken } = useAuth();
+  const navigate = useNavigate();
+
+  if (token) {
+    navigate('/dashboard', { replace: true });
+  }
+
   const form = useForm<z.infer<typeof userSignUpSchema>>({
     resolver: zodResolver(userSignUpSchema),
   });
 
-  function onSubmit(values: z.infer<typeof userSignUpSchema>) {
+  async function onSubmit(values: z.infer<typeof userSignUpSchema>) {
     console.log(values);
+    const user = await axios.post(
+      process.env.API_ENDPOINT + `/user/signup`,
+      values
+    );
+
+    setToken(user.data.token);
+    navigate('/dashboard', { replace: true });
   }
 
   return (

@@ -1,12 +1,11 @@
-import { Outlet } from 'react-router-dom';
-import Header from './components/Header';
+import AuthProvider from './provider/authProvider';
+import Routes from './routes';
 
 function App() {
   return (
-    <div>
-      <Header />
-      <Outlet />
-    </div>
+    <AuthProvider>
+      <Routes />
+    </AuthProvider>
   );
 }
 
