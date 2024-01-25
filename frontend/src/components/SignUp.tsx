@@ -132,7 +132,7 @@ const SignUp = () => {
         <p className='d'>
           Already have an account?{' '}
           <Link to='/signin' className='underline font-semibold'>
-            Login
+            SignIn
           </Link>
         </p>
       </div>

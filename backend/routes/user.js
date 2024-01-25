@@ -23,9 +23,9 @@ router.post('/signup', async (req, res) => {
       await Account.create({ userId: newUser._id, balance });
       const token = jwt.sign(
         {
-          userId: userExist._id,
-          username: userExist.username,
-          fullName: userExist.firstName + ' ' + userExist.lastName,
+          userId: newUser._id,
+          username: newUser.username,
+          fullName: newUser.firstName + ' ' + newUser.lastName,
         },
         JWT_SECRET
       );

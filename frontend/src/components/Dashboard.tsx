@@ -88,7 +88,7 @@ const Dashboard = () => {
           userInfo.userId != user._id && (
             <Table key={user._id}>
               <TableBody>
-                <TableRow>
+                <TableRow className='flex justify-between'>
                   <TableCell className='font-medium'>
                     {user.firstName + ' ' + user.lastName}
                   </TableCell>
